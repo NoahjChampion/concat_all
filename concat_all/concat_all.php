@@ -16,20 +16,6 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 // not for admins
 if(!is_admin()) {
 
-	// root path and url
-	define('MF_SITE_ROOT', realpath(__DIR__ . '/../../..'));
-	define('MF_SITE_URL', site_url());
-
-	// cache dir and url
-	define('MF_CACHE_DIR', MF_SITE_ROOT . '/wp-content/uploads/concat_all_cache');
-	define('MF_CACHE_URL', MF_SITE_URL . '/wp-content/uploads/concat_all_cache');
-
-
-	// if cache dir does not exist, create it
-	if(!file_exists(MF_CACHE_DIR)) {
-		mkdir(MF_CACHE_DIR, 0755);
-	}
-
 	/**
 	 * Output Buffering
 	 *
@@ -52,6 +38,7 @@ if(!is_admin()) {
 	    // Apply any filters to the final output
 	    $final = apply_filters('final_output', $final);
 	    echo $final;
+
 	}, 0);
 
 
@@ -63,6 +50,17 @@ if(!is_admin()) {
 
 
 function mf_minify_src($raw_html) {
+
+  $upload_dir = wp_upload_dir();
+
+  // cache dir and url
+  define('MF_CACHE_DIR', $upload_dir['basedir'] . '/concat_all_cache');
+  define('MF_CACHE_URL', $upload_dir['baseurl'] . '/concat_all_cache');
+
+  // if cache dir does not exist, create it
+  if(!file_exists(MF_CACHE_DIR)) {
+    mkdir(MF_CACHE_DIR, 0755);
+  }
 
   $html = $raw_html;
 
@@ -86,12 +84,12 @@ function mf_minify_src($raw_html) {
 
       case 'link':
 
-        // we just want links like <link rel='stylesheet' href='https://www.example.com/wp-content/themes/hostmev2/style.css' type='text/css'/>
+        // we just want links like <link rel='stylesheet' href='https://www.example.com/path/style.css' type='text/css'/>
         if(!$tag->hasAttribute('rel')) break;
         if($tag->getAttribute('rel') != 'stylesheet') break;
         if(!$tag->hasAttribute('href')) break;
 
-        $media 			  = $tag->hasAttribute('media') ? $tag->getAttribute('media') : 'all'; 
+        $media 			      = $tag->hasAttribute('media') ? $tag->getAttribute('media') : 'all'; 
         $url              = $tag->getAttribute('href');
         $id               = md5($url);
 
@@ -101,9 +99,9 @@ function mf_minify_src($raw_html) {
 
         $resources[$id]   = [
           'type'          => 'css',
-          'media'		  => $media,
+          'media'		      => $media,
           'is_external'   => true,
-          'url'     	  => $url,
+          'url'     	    => $url,
           'node_path'     => $node_path,
           'content'       => ''
         ];
@@ -115,7 +113,7 @@ function mf_minify_src($raw_html) {
         $node_path        = $tag->getNodePath();
         $content          = trim($tag->textContent);
         $id               = md5($content);
-        $media 			  = $tag->hasAttribute('media') ? $tag->getAttribute('media') : 'all'; 
+        $media 			      = $tag->hasAttribute('media') ? $tag->getAttribute('media') : 'all'; 
 
         $resource_names['css'][] = $id;
         $to_be_removed[]  = $tag;
@@ -146,7 +144,6 @@ function mf_minify_src($raw_html) {
 
           $url              = $tag->getAttribute('src');
           $id               = md5($url);
-          //$file_path        = 'wp-' . explode('/wp-', $url)[1];
           $content          = '';
 
           $resource_names['js'][] = $id;
@@ -155,7 +152,7 @@ function mf_minify_src($raw_html) {
             'type'          => 'js',
             'is_external'   => true,
             'url'           => $url,
-            'node_path'		=> $node_path,
+            'node_path'		  => $node_path,
             'content'       => $content
           ];
 
@@ -169,7 +166,7 @@ function mf_minify_src($raw_html) {
           $resources[$id]   = [
             'type'          => 'js',
             'is_external'   => false,
-            'node_path'		=> $node_path,
+            'node_path'		  => $node_path,
             'content'       => $content
           ];
 
@@ -185,12 +182,12 @@ function mf_minify_src($raw_html) {
   $css_name = md5(implode('', $resource_names['css']));
 
   // if minified js does not exist set flag to create it
-  $js_file = "wp-content/uploads/concat_all_cache/{$js_name}.js";
-  $js      = file_exists(MF_SITE_ROOT . "/$js_file") ? false : $js_file;
+  $js_file = "$js_name.js";
+  $js      = file_exists(MF_CACHE_DIR . "/$js_file") ? false : $js_file;
 
   // if minified css does not exist set flag to create it
-  $css_file = "wp-content/uploads/concat_all_cache/{$css_name}.css";
-  $css      = file_exists(MF_SITE_ROOT . "/$css_file") ? false : $css_file;
+  $css_file = "$css_name.css";
+  $css      = file_exists(MF_CACHE_DIR . "/$css_file") ? false : $css_file;
 
   // if either file is missing create it
   if($js || $css) {
@@ -209,8 +206,8 @@ function mf_minify_src($raw_html) {
   $html = minify_html($html);
 
   // insert minified style and script elements
-  $minified_css = '<link rel="stylesheet" href="' . $css_file . '" type="text/css"/>';
-  $minified_js  = '<script type="text/javascript" src="' . $js_file . '" defer></script>';
+  $minified_css = '<link rel="stylesheet" href="' . MF_CACHE_URL . "/$css_file" . '" type="text/css"/>';
+  $minified_js  = '<script type="text/javascript" src="' . MF_CACHE_URL . "/$js_file" . '" defer></script>';
   $html = str_replace('</head>', $minified_css . '</head>', $html);
   $html = str_replace('</head>', $minified_js  . '</head>', $html);
   return $html;
@@ -246,7 +243,7 @@ function mf_concat($js_file, $css_file, $resources) {
         } else {
         	$sig = '/' . '***  From in-file style on ' . $res['node_path'] . '  ***' . '/' . PHP_EOL;
         	$c = $res['content'];
-        	$old_path = MF_SITE_ROOT . '/wp-content/uploads/concat_all_cache';
+        	$old_path = MF_CACHE_DIR;
         }
 
         // adjust urls for backgrounds to be correct for the new path
@@ -265,12 +262,12 @@ function mf_concat($js_file, $css_file, $resources) {
   	foreach ($js as $j) {
   		$minjs .= 'try {' . PHP_EOL . $j . PHP_EOL . '} catch(err) { console.log(err); };' . PHP_EOL . PHP_EOL;
   	}
-    file_put_contents(MF_SITE_ROOT . "/$js_file", $minjs);
+    file_put_contents(MF_CACHE_DIR . "/$js_file", $minjs);
   }
 
   if($css_file !== false) {
     $css = implode(PHP_EOL.PHP_EOL, $css);
-    file_put_contents(MF_SITE_ROOT . "/$css_file", $css);
+    file_put_contents(MF_CACHE_DIR . "/$css_file", $css);
   }
 
 }
