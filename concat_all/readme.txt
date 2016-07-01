@@ -1,24 +1,25 @@
 === concat_all ===
-Contributors: majid4466 at gmail dot com
+Contributors: majidfouladpour
 Tags: minify, script, style, concatenate
 Requires at least: 3.4
-Tested up to: 4.4
+Tested up to: 4.5.3
 Stable tag: trunk
 License: MIT
+License URI: https://opensource.org/licenses/MIT
 
-This plugin will concatenate all css and js code in the output of your site and will replace all link and script elements with a single one for each.
+This plugin will concatenate and cache all css and js code in the output of your site.
 
 == Description ==
 
 This is the list of changes the plugin makes:  
 
 * Buffers output for the following processing
-* Finds all `<script type="text/javascript">` elements (with or without `src`)
+* Finds all script elements (of type "text/javascript", with or without `src`)
 * Uses a hash of either the `src` or the content of the script block to create a cache filename
 * Checks if the cache file has already been created. If so, it proceeds to concatenating css
 * Grabs the js source from in-file script blocks as well as external files
 * Concatenates all js and saves to cache directory, preserving the same order the originals appeared in output
-* Does the same with `<link rel='stylesheet' ...>` and `<style>` elements and if cached file does not exist, creates it.
+* Does the same with `link rel='stylesheet'` and `style` elements and if cached file does not exist, creates it.
 * Removes the now redundant *script*, *link*, and *style* elements from HTML source
 * Adds a single *link* element to *head* and a single *script* element before *body* closes for the cached resources
 * Minifies the HTML source and sends the output
@@ -42,12 +43,25 @@ If, however, you see that resulting cahced css and js would shrink significantly
 
 = Are there any known issues? =
 
-If you have `<pre>`, `<code>` or filled `<textarea>` elements in your output, newlines and other whitespace will not be preserved while minifying the HTML. If this is the case, comment out the line that minifiys the output prior to sending it, or, change the minifier code to not remove whitespace within those elements!
+* The plugin uses output buffering, which might interfere with setups/plugins that cannot have their output buffered. In such cases, the plugin cannot be used.
 
+* If you have `<pre>`, `<code>` or filled `<textarea>` elements in your output, newlines and other whitespace will not be preserved while minifying the HTML. If this is the case, comment out the line that minifiys the output prior to sending it, or, change the minifier code to not remove whitespace within those elements!
 
-== License ==
+== Changelog ==
+
+= 0.2 =
+In this version hard-coded paths where replaced by getting the path from `wp_upload_dir()` function.
+
+== Upgrade Notice ==
+
+= 0.2 =
+Upgrade advised.
+
+== Misc. ==
 
 The plugin would not work without output buffering and the code for that has been taken verbatim from [this SO answer](http://stackoverflow.com/a/22818089/66580), thanks [@kfriend](http://stackoverflow.com/users/419673/kfriend).
 For HTML minification I am using the `minify_html` function from [this gist](https://gist.github.com/tovic/d7b310dea3b33e4732c0), thanks [@Taufik Nurrohman](https://github.com/tovic).
+
+The source code is also available on Github: https://github.com/majid4466/concat_all
 
 Copyright © 2016 Majid Fouladpour | MIT license
