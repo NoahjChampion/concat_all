@@ -46,11 +46,11 @@ The concatenated files are saved in `wp-content/uploads/concat_all_cache` direct
 
 ### 0.2 ###
 In this version hard-coded paths where replaced by getting the path from `wp_upload_dir()` function.
-If you have `<pre>`, `<code>` or filled `<textarea>` elements in your output, newlines and other whitespace will not be preserved while minifying the HTML. If this is the case, comment out the line that minifiys the output prior to sending it, or, change the minifier code to not remove whitespace within those elements!
+
 
 ## License ##
 
 The plugin would not work without output buffering and the code for that has been taken verbatim from [this SO answer](http://stackoverflow.com/a/22818089/66580), thanks [@kfriend](http://stackoverflow.com/users/419673/kfriend).
 For HTML minification I am using the `minify_html` function from [this gist](https://gist.github.com/tovic/d7b310dea3b33e4732c0), thanks [@Taufik Nurrohman](https://github.com/tovic).
 
-Copyright © 2016 Majid Fouladpour | MIT license
+Copyright © 2016 Majid Fouladpour | [MIT license](https://opensource.org/licenses/MIT)
