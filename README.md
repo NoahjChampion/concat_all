@@ -38,6 +38,10 @@ If, however, you see that resulting cahced css and js would shrink significantly
 
 * If you have `<pre>`, `<code>` or filled `<textarea>` elements in your output, newlines and other whitespace will not be preserved while minifying the HTML. If this is the case, comment out the line that minifiys the output prior to sending it, or, change the minifier code to not remove whitespace within those elements!
 
+### Maintainance ###
+
+The concatenated files are saved in `wp-content/uploads/concat_all_cache` directory. When you install, activate or deactivate other plugins or change your template, the catched files become obsolute and you'd better delete them to avoid having unused files pile up there.
+
 ## Changelog ##
 
 ### 0.2 ###
