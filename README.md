@@ -33,6 +33,15 @@ If, however, you see that resulting cahced css and js would shrink significantly
 3. In your Admin panel under Plugins, find and enable `Concat All` plugin.
 
 ### Known Issues ###
+
+* The plugin uses output buffering which might interfere with setups/plugins that cannot have their output buffered. In such cases, the plugin cannot be used.
+
+* If you have `<pre>`, `<code>` or filled `<textarea>` elements in your output, newlines and other whitespace will not be preserved while minifying the HTML. If this is the case, comment out the line that minifiys the output prior to sending it, or, change the minifier code to not remove whitespace within those elements!
+
+## Changelog ##
+
+### 0.2 ###
+In this version hard-coded paths where replaced by getting the path from `wp_upload_dir()` function.
 If you have `<pre>`, `<code>` or filled `<textarea>` elements in your output, newlines and other whitespace will not be preserved while minifying the HTML. If this is the case, comment out the line that minifiys the output prior to sending it, or, change the minifier code to not remove whitespace within those elements!
 
 ## License ##
